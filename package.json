@@ -4,9 +4,8 @@
     "description": "Template for the WebSocket remote control task",
     "main": "dist/app.js",
     "scripts": {
-        "start": "node ./index.js",
-        "start:dev": "npx nodemon",
-        "start:prod": "webpack --mode production && node dist/app.js",
+        "start": "npx nodemon",
+        "build": "webpack --mode production && node dist/app.js",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "author": "Andrei Auchynnikau",

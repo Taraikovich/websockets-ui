@@ -1,4 +1,4 @@
-type Ship = {
+export type Ship = {
   position: { x: number; y: number };
   direction: boolean;
   type: 'small' | 'medium' | 'large' | 'huge';
@@ -7,6 +7,7 @@ type Ship = {
 
 type Player = {
   isTurn: boolean;
+  turns: { x: number; y: number }[];
   indexPlayer: string;
   ships: Ship[];
 };

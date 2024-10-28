@@ -1,17 +1,21 @@
 import { randomUUID } from 'node:crypto';
 import { WebSocket, WebSocketServer } from 'ws';
-import { rooms } from '../DB/rooms';
+import { filterRooms, rooms } from '../DB/rooms';
 import { userConnections } from '../DB/users';
-import { Message } from '../ws_server';
+import { WSserver, Message } from '../ws_server';
 
 export const addToRoom = (
+  wss: WebSocketServer,
   ws: WebSocket,
   user: { name: string; index: string },
   msg: Message
-): string => {
+): boolean => {
   const data = JSON.parse(msg.data);
 
   const room = rooms.find((room) => room.roomId === data.indexRoom);
+
+  if (room?.roomUsers[0].index === user.index) return false;
+
   const idGame = randomUUID();
   const secondUserWs = userConnections.get(room!.roomUsers[0].index);
 
@@ -30,14 +34,16 @@ export const addToRoom = (
 
   ws.send(response(user.index));
   secondUserWs!.send(response(room!.roomUsers[0].index));
-  return idGame;
+  filterRooms();
+  sendRooms(wss, msg);
+  return true;
 };
 
 export const createRoom = (
   wss: WebSocketServer,
   user: { name: string; index: string },
   msg: Message
-) => {
+): boolean => {
   const room = {
     roomId: randomUUID(),
     roomUsers: [
@@ -49,6 +55,7 @@ export const createRoom = (
   };
   rooms.push(room);
   sendRooms(wss, msg);
+  return true;
 };
 
 export const sendRooms = (wss: WebSocketServer, msg: Message) => {
@@ -59,8 +66,6 @@ export const sendRooms = (wss: WebSocketServer, msg: Message) => {
   };
 
   wss.clients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify(response));
-    }
+    client.send(JSON.stringify(response));
   });
 };
